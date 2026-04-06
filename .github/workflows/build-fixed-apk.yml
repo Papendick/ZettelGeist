@@ -1,0 +1,81 @@
+name: Build APK (Fixed)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Patch known build blockers
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          # 1) Missing lifecycle-viewmodel-ktx dependency for viewModelScope
+          gradle_file = Path('app/build.gradle.kts')
+          text = gradle_file.read_text(encoding='utf-8')
+          anchor = '    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")\n'
+          insertion = '    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")\n'
+          if insertion not in text and anchor in text:
+              text = text.replace(anchor, anchor + insertion)
+              gradle_file.write_text(text, encoding='utf-8')
+
+          # 2) FlowRow requires ExperimentalLayoutApi opt-in
+          search_file = Path('app/src/main/java/de/zettelgeist/app/ui/screens/SearchScreen.kt')
+          text = search_file.read_text(encoding='utf-8')
+          import_line = 'import androidx.compose.foundation.layout.ExperimentalLayoutApi\n'
+          if import_line not in text:
+              text = text.replace(
+                  'import androidx.compose.foundation.layout.*\n',
+                  'import androidx.compose.foundation.layout.*\n' + import_line
+              )
+          text = text.replace(
+              '@OptIn(ExperimentalMaterial3Api::class)',
+              '@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)'
+          )
+          search_file.write_text(text, encoding='utf-8')
+
+          # 3) Generic decodeFromString import missing
+          vm_file = Path('app/src/main/java/de/zettelgeist/app/ui/viewmodel/NoteViewModel.kt')
+          text = vm_file.read_text(encoding='utf-8')
+          import_line = 'import kotlinx.serialization.decodeFromString\n'
+          if import_line not in text:
+              text = text.replace(
+                  'import kotlinx.coroutines.launch\n',
+                  'import kotlinx.coroutines.launch\n' + import_line
+              )
+          vm_file.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZettelGeist-debug-fixed
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
