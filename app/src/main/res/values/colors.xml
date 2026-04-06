@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="teal">#FF0D9488</color>
+    <color name="teal_dark">#FF0F766E</color>
+    <color name="inbox_amber">#FFD97706</color>
+    <color name="source_blue">#FF2563EB</color>
+    <color name="zettel_emerald">#FF059669</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>
