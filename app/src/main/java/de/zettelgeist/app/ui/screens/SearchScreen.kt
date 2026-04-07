@@ -1,5 +1,6 @@
 package de.zettelgeist.app.ui.screens
 
+import androidx.compose.foundation.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -92,6 +93,7 @@ fun SearchScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TagCloudLayout(
     modifier: Modifier = Modifier,
