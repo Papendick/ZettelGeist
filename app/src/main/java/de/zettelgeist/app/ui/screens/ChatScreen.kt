@@ -34,7 +34,7 @@ fun ChatScreen(
     var input by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val isDark = isDarkColor(MaterialTheme.colorScheme.background)
 
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
@@ -200,9 +200,7 @@ private fun ChatBubble(
     }
 }
 
-private fun Color.luminance(): Float {
-    val r = red * 0.2126f
-    val g = green * 0.7152f
-    val b = blue * 0.0722f
-    return r + g + b
+private fun isDarkColor(color: Color): Boolean {
+    val luminance = 0.2126f * color.red + 0.7152f * color.green + 0.0722f * color.blue
+    return luminance < 0.5f
 }
