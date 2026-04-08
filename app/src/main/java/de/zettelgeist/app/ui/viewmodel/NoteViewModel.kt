@@ -13,6 +13,7 @@ import de.zettelgeist.app.data.repository.NoteRepository
 import de.zettelgeist.app.data.vault.VaultManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
 
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
